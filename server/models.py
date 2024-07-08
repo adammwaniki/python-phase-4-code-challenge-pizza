@@ -22,6 +22,8 @@ class Restaurant(db.Model, SerializerMixin):
 
     # add relationship
     restaurant_pizzas = db.relationship('RestaurantPizza', back_populates='restaurant', cascade='all, delete-orphan')
+    # adding association proxy so as to create a read/write view of a target attribute across a relationship
+    pizzas = association_proxy('restaurant_pizzas', 'pizza')
 
     # add serialization rules
     serialize_rules = ('-restaurant_pizzas.restaurant',)
@@ -39,6 +41,8 @@ class Pizza(db.Model, SerializerMixin):
 
     # add relationship
     restaurant_pizzas = db.relationship('RestaurantPizza', back_populates='pizza', cascade='all, delete-orphan')
+    # adding association proxy so as to create a read/write view of a target attribute across a relationship. see line 25,26
+    restaurants = association_proxy('restaurant_pizzas', 'restaurant')
 
     # add serialization rules
     serialize_rules = ('-restaurant_pizzas.pizza',)
