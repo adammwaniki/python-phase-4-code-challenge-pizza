@@ -100,6 +100,52 @@ class RestaurantPizzas(Resource):
         # Switching to request.get_json() because the app makes use of json data as well as form data
         # The price must be an integer as indicated in the models so we will do type conversion here
         restaurant_pizza_data = request.get_json()
+        try:
+            price = restaurant_pizza_data.get('price')
+            pizza_id = restaurant_pizza_data.get('pizza_id')
+            restaurant_id = restaurant_pizza_data.get('restaurant_id')
+            # added validation
+            if price < 1 or price > 30:
+                return make_response(jsonify({"errors": ["validation errors"]}), 400)
+        
+
+            restaurant_pizza = RestaurantPizza(price=price, pizza_id=pizza_id, restaurant_id=restaurant_id)
+        
+            db.session.add(restaurant_pizza)
+            db.session.commit()
+
+            response_dict = restaurant_pizza.to_dict()
+            return make_response(
+            jsonify(response_dict),
+            201
+            )
+
+        except KeyError as e:
+            db.session.rollback()
+            return make_response(jsonify({"errors": [f"Missing key: {str(e)}"]}), 404)
+        finally:
+            db.session.close()
+api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
+
+if __name__ == "__main__":
+    app.run(port=5555, debug=True)
+
+
+
+
+
+
+
+
+
+
+# Notes on alternative solutions that  work but don't pass all the tests 
+'''
+class RestaurantPizzas(Resource):
+    def post(self):
+        # Switching to request.get_json() because the app makes use of json data as well as form data
+        # The price must be an integer as indicated in the models so we will do type conversion here
+        restaurant_pizza_data = request.get_json()
 
         price = restaurant_pizza_data.get('price')
         pizza_id = restaurant_pizza_data.get('pizza_id')
@@ -123,12 +169,7 @@ class RestaurantPizzas(Resource):
         
 api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
         
-
-
-if __name__ == "__main__":
-    app.run(port=5555, debug=True)
-
-
+'''
 
 '''
 def post(self):
