@@ -30,7 +30,8 @@ class Restaurants(Resource):
     def get(self):
         # making use of a list of restaurant dictionaries since that's what the code challenge wants 
         # to be parsed as json
-        response_dict_list = [restaurant.to_dict() for restaurant in Restaurant.query.all()]
+        # including a condition for the 'only" parameter whereby the id name and address are the only ones to be returned because there are other things in the list
+        response_dict_list = [restaurant.to_dict(only=("id", "name", "address")) for restaurant in Restaurant.query.all()]
 
         # Creating a jsonified response
         response = make_response(
@@ -68,23 +69,57 @@ class RestaurantsByID(Resource):
     def delete(self, id):
         restaurant_specific = Restaurant.query.filter(Restaurant.id == id).first()
 
-        db.session.delete(restaurant_specific)
-        db.session.commit()
-
-        response_dict = {"error": "Restaurant not found"}
-
-        response = make_response(
-            response_dict,
-            204
-        )
-
+        # Making sure the restaurant exixts before deleting it
+        if restaurant_specific:
+            db.session.delete(restaurant_specific)
+            db.session.commit()
+            response = make_response({}, 204)
+        else:
+            response = make_response(jsonify({"error": "Restaurant not found"}), 404)
+        
         return response
     
 api.add_resource(RestaurantsByID, '/restaurants/<int:id>')
 
-class Pizzas:
+class Pizzas(Resource):
     def get(self):
-        pass
+        # Remembering to add the only condition like on line 33
+        response_dict_list = [pizza.to_dict(only=("id", "name", "ingredients")) for pizza in Pizza.query.all()]
+
+        response = make_response(
+            jsonify(response_dict_list),
+            200
+        )
+
+        return response
+    
+api.add_resource(Pizzas, '/pizzas')
+
+class RestaurantPizzas(Resource):
+    def post(self):
+        # We are working with form data so I won't use request.get_json() here
+        # The price must be an integer as indicated in the models so we will do type conversion here
+        new_restaurant_pizza_data = RestaurantPizza(
+            price = int(request.form['price']),
+            pizza_id = request.form['pizza_id'],
+            restaurant_id = request.form['restaurant_id'],
+        )
+        db.session.add(new_restaurant_pizza_data)
+        db.session.commit()
+
+        response_dict = new_restaurant_pizza_data.to_dict()
+        response = make_response(
+            jsonify(response_dict),
+            201
+        )
+        
+        return response if response else make_response(
+            jsonify({"errors": ["validation errors"]}),
+            400
+        )
+        
+api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
+        
 
 
 if __name__ == "__main__":
