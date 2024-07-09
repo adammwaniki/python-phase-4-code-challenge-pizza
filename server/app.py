@@ -124,3 +124,28 @@ api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
+
+
+'''
+def post(self):
+        # I thought we were working with form data so I wasn't using request.get_json() here
+        # The price must be an integer as indicated in the models so we will do type conversion here
+        new_restaurant_pizza_data = RestaurantPizza(
+            price = int(request.form['price']),
+            pizza_id = request.form['pizza_id'],
+            restaurant_id = request.form['restaurant_id'],
+        )
+        db.session.add(new_restaurant_pizza_data)
+        db.session.commit()
+
+        response_dict = new_restaurant_pizza_data.to_dict()
+        response = make_response(
+            jsonify(response_dict),
+            201
+        )
+        
+        return response if response else make_response(
+            jsonify({"errors": ["validation errors"]}),
+            400
+        )
+'''
