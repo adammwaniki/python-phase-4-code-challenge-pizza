@@ -101,7 +101,7 @@ class RestaurantPizzas(Resource):
         # The price must be an integer as indicated in the models so we will do type conversion here
         restaurant_pizza_data = request.get_json()
 
-        price = int(restaurant_pizza_data.get('price'))
+        price = restaurant_pizza_data.get('price')
         pizza_id = restaurant_pizza_data.get('pizza_id')
         restaurant_id = restaurant_pizza_data.get('restaurant_id')
 
