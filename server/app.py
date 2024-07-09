@@ -83,7 +83,7 @@ api.add_resource(RestaurantsByID, '/restaurants/<int:id>')
 
 class Pizzas(Resource):
     def get(self):
-        # Remembering to add the only condition like on line 33
+        # Remembering to add the only condition like on line 33,34
         response_dict_list = [pizza.to_dict(only=("id", "name", "ingredients")) for pizza in Pizza.query.all()]
 
         response = make_response(
@@ -97,17 +97,20 @@ api.add_resource(Pizzas, '/pizzas')
 
 class RestaurantPizzas(Resource):
     def post(self):
-        # We are working with form data so I won't use request.get_json() here
+        # Switching to request.get_json() because the app makes use of json data as well as form data
         # The price must be an integer as indicated in the models so we will do type conversion here
-        new_restaurant_pizza_data = RestaurantPizza(
-            price = int(request.form['price']),
-            pizza_id = request.form['pizza_id'],
-            restaurant_id = request.form['restaurant_id'],
-        )
-        db.session.add(new_restaurant_pizza_data)
+        restaurant_pizza_data = request.get_json()
+
+        price = int(restaurant_pizza_data.get('price'))
+        pizza_id = restaurant_pizza_data.get('pizza_id')
+        restaurant_id = restaurant_pizza_data.get('restaurant_id')
+
+        restaurant_pizza = RestaurantPizza(price=price, pizza_id=pizza_id, restaurant_id=restaurant_id)
+        
+        db.session.add(restaurant_pizza)
         db.session.commit()
 
-        response_dict = new_restaurant_pizza_data.to_dict()
+        response_dict = restaurant_pizza.to_dict()
         response = make_response(
             jsonify(response_dict),
             201
@@ -124,6 +127,7 @@ api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
+
 
 
 '''
